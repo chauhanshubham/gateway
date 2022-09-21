@@ -6,6 +6,7 @@ import (
 	"github.com/telepresenceio/watchable"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	"github.com/envoyproxy/gateway/internal/ir"
@@ -17,12 +18,17 @@ type ProviderResources struct {
 	GatewayClasses watchable.Map[string, *gwapiv1b1.GatewayClass]
 	Gateways       watchable.Map[types.NamespacedName, *gwapiv1b1.Gateway]
 	HTTPRoutes     watchable.Map[types.NamespacedName, *gwapiv1b1.HTTPRoute]
+	TLSRoutes      watchable.Map[types.NamespacedName, *gwapiv1a2.TLSRoute]
 	Namespaces     watchable.Map[string, *corev1.Namespace]
 	Services       watchable.Map[types.NamespacedName, *corev1.Service]
 
 	GatewayClassesInitialized sync.WaitGroup
 	GatewaysInitialized       sync.WaitGroup
-	HTTPRoutesInitialized     sync.WaitGroup
+	RoutesInitialized         sync.WaitGroup
+
+	// RouteInitializedOnce is initialized when the provider gets one
+	// Route object i.e. oneof HTTPRoute, TLSRoute etc.
+	RouteInitializedOnce sync.Once
 }
 
 func (p *ProviderResources) DeleteGatewayClasses() {
@@ -60,6 +66,17 @@ func (p *ProviderResources) GetHTTPRoutes() []*gwapiv1b1.HTTPRoute {
 	}
 	res := make([]*gwapiv1b1.HTTPRoute, 0, p.HTTPRoutes.Len())
 	for _, v := range p.HTTPRoutes.LoadAll() {
+		res = append(res, v)
+	}
+	return res
+}
+
+func (p *ProviderResources) GetTLSRoutes() []*gwapiv1a2.TLSRoute {
+	if p.TLSRoutes.Len() == 0 {
+		return nil
+	}
+	res := make([]*gwapiv1a2.TLSRoute, 0, p.TLSRoutes.Len())
+	for _, v := range p.TLSRoutes.LoadAll() {
 		res = append(res, v)
 	}
 	return res

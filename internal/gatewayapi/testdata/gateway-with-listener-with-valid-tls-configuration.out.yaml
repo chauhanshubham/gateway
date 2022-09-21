@@ -65,6 +65,7 @@ xdsIR:
       hostnames:
         - "*"
       tls:
+        tlsMode: Terminate
         serverCertificate: Zm9vCg==
         privateKey: YmFyCg==
       routes:

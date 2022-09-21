@@ -46,6 +46,7 @@ func (r *Runner) subscribeAndTranslate(ctx context.Context) {
 	gatewayClassesCh := r.ProviderResources.GatewayClasses.Subscribe(ctx)
 	gatewaysCh := r.ProviderResources.Gateways.Subscribe(ctx)
 	httpRoutesCh := r.ProviderResources.HTTPRoutes.Subscribe(ctx)
+	tlsRoutesCh := r.ProviderResources.TLSRoutes.Subscribe(ctx)
 	servicesCh := r.ProviderResources.Services.Subscribe(ctx)
 	namespacesCh := r.ProviderResources.Namespaces.Subscribe(ctx)
 
@@ -57,18 +58,22 @@ func (r *Runner) subscribeAndTranslate(ctx context.Context) {
 			r.waitUntilGCAndGatewaysInitialized()
 		case <-gatewaysCh:
 			r.waitUntilGCAndGatewaysInitialized()
+		case <-servicesCh:
+		case <-namespacesCh:
 		case <-httpRoutesCh:
 			r.waitUntilAllGAPIInitialized()
 			// Now that the httproute resources have been initialized,
 			// allow the runner to publish the translated xdsIR.
 			xdsIRReady = true
-		case <-servicesCh:
-		case <-namespacesCh:
+		case <-tlsRoutesCh:
+			r.waitUntilAllGAPIInitialized()
+			xdsIRReady = true
 		}
 		r.Logger.Info("received a notification")
 		// Load all resources required for translation
 		in.Gateways = r.ProviderResources.GetGateways()
 		in.HTTPRoutes = r.ProviderResources.GetHTTPRoutes()
+		in.TLSRoutes = r.ProviderResources.GetTLSRoutes()
 		in.Services = r.ProviderResources.GetServices()
 		in.Namespaces = r.ProviderResources.GetNamespaces()
 		gatewayClasses := r.ProviderResources.GetGatewayClasses()
@@ -130,5 +135,5 @@ func (r *Runner) waitUntilGCAndGatewaysInitialized() {
 // gateways and httproutes have been initialized during startup
 func (r *Runner) waitUntilAllGAPIInitialized() {
 	r.waitUntilGCAndGatewaysInitialized()
-	r.ProviderResources.HTTPRoutesInitialized.Wait()
+	r.ProviderResources.RoutesInitialized.Wait()
 }

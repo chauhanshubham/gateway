@@ -149,6 +149,7 @@ func setupRunners(cfg *config.Server) error {
 	pResources.GatewayClasses.Close()
 	pResources.Gateways.Close()
 	pResources.HTTPRoutes.Close()
+	pResources.TLSRoutes.Close()
 	xdsIR.Close()
 	infraIR.Close()
 	xds.Close()
