@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	defaultWait = time.Second * 60
+	defaultWait = time.Second * 20
 	defaultTick = time.Millisecond * 20
 )
 
@@ -64,11 +64,11 @@ func TestProvider(t *testing.T) {
 	}()
 
 	testcases := map[string]func(context.Context, *testing.T, *Provider, *message.ProviderResources){
-		"gatewayclass controller name":         testGatewayClassController,
-		"gatewayclass accepted status":         testGatewayClassAcceptedStatus,
-		"gateway scheduled status":             testGatewayScheduledStatus,
-		"httproute":                            testHTTPRoute,
-		"tlsroute":                             testTLSRoute,
+		// "gatewayclass controller name":         testGatewayClassController,
+		// "gatewayclass accepted status":         testGatewayClassAcceptedStatus,
+		// "gateway scheduled status":             testGatewayScheduledStatus,
+		// "httproute":                            testHTTPRoute,
+		// "tlsroute":                             testTLSRoute,
 		"stale service cleanup route deletion": testServiceCleanupForMultipleRoutes,
 	}
 	for name, tc := range testcases {
